@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MultiModel
 
 A Python application that routes prompts to multiple AI models via OpenRouter.
@@ -43,3 +44,6 @@ MultiModel/
 ├─ main.py           ← entry point
 └─ README.md
 ```
+=======
+# MultiModel
+>>>>>>> c8daec2f91629c8566ba5bccf2e869549aafdbcb
