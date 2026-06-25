@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Model Comparison Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Background effects -->
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="navbar-inner">
+                <div class="nav-brand">
+                    <span class="nav-logo">🧠</span>
+                    <span class="nav-title">Model <span class="highlight">Compare</span></span>
+                </div>
+                <div class="nav-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connected</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Compare AI Models<br>
+                    <span class="gradient-text">Side by Side</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Ask a question to multiple LLMs at once and compare their responses, latency, token usage, and estimated cost — all powered by OpenRouter.
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-container">
+            <!-- Query Panel -->
+            <section class="panel query-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🎯</div>
+                    <h2 class="panel-title">Your Question</h2>
+                </div>
+                <div class="panel-body">
+                    <textarea
+                        id="questionInput"
+                        class="question-input"
+                        placeholder="Ask anything... e.g. 'What is the difference between quantum computing and classical computing?'"
+                        rows="4"
+                    >What is Artificial Intelligence?</textarea>
+                    <div class="input-footer">
+                        <span class="char-count" id="charCount">0 characters</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Model Selection -->
+            <section class="panel model-select-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🤖</div>
+                    <h2 class="panel-title">Select Models</h2>
+                    <div class="model-actions">
+                        <button class="btn btn-sm btn-ghost" id="selectAllBtn">Select All</button>
+                        <button class="btn btn-sm btn-ghost" id="deselectAllBtn">Deselect All</button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="model-grid" id="modelGrid">
+                        {% for model in models %}
+                        <label class="model-chip" data-model-id="{{ model.id }}">
+                            <input type="checkbox" class="model-checkbox" value="{{ model.id }}" checked>
+                            <span class="chip-icon">{{ model.icon }}</span>
+                            <span class="chip-info">
+                                <span class="chip-name">{{ model.name }}</span>
+                                <span class="chip-provider">{{ model.provider }}</span>
+                            </span>
+                            <span class="chip-check">✓</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <button class="btn btn-primary btn-large" id="compareBtn">
+                    <span class="btn-icon">⚡</span>
+                    <span class="btn-text">Compare Models</span>
+                </button>
+                <button class="btn btn-secondary btn-large" id="clearBtn">
+                    <span class="btn-icon">↺</span>
+                    <span class="btn-text">Clear Results</span>
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState" style="display: none;">
+                <div class="spinner-ring"></div>
+                <h3>Querying Models...</h3>
+                <p class="loading-desc">Sending request to {{ models|length }} model(s) simultaneously</p>
+                <div class="loading-bar-track">
+                    <div class="loading-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            <div class="error-display" id="errorDisplay" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <div class="error-msg" id="errorMsg"></div>
+            </div>
+
+            <!-- Summary Panel -->
+            <section class="panel summary-panel" id="summaryPanel" style="display: none;">
+                <div class="panel-header">
+                    <div class="panel-icon">📊</div>
+                    <h2 class="panel-title">Run Summary</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="summary-grid">
+                        <div class="summary-stat">
+                            <div class="stat-icon stat-icon-models">🧠</div>
+                            <div class="stat-body">
+                                <span class="stat-value" id="totalModels">0</span>
+                                <span class="stat-label">Models Queried</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-icon stat-icon-success">✅</div>
+                            <div class="stat-body">
+                                <span class="stat-value" id="successCount">0</span>
+                                <span class="stat-label">Succeeded</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-icon stat-icon-fail">❌</div>
+                            <div class="stat-body">
+                                <span class="stat-value" id="failedCount">0</span>
+                                <span class="stat-label">Failed</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-icon stat-icon-cost">💰</div>
+                            <div class="stat-body">
+                                <span class="stat-value" id="totalCost">$0.000000</span>
+                                <span class="stat-label">Total Estimated Cost</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-icon stat-icon-time">⏱️</div>
+                            <div class="stat-body">
+                                <span class="stat-value" id="totalRuntime">0.00s</span>
+                                <span class="stat-label">Wall-Clock Runtime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Grid -->
+            <div class="results-grid" id="resultsGrid"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-inner">
+                <p>Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> &nbsp;·&nbsp; Responses are AI-generated and may not always be accurate.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

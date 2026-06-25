@@ -1,28 +1,40 @@
-# MultiModel — Specification
+# Spec — Multi-Model Comparison Tool
 
-## Overview
-<!-- Describe what this application does in 1-3 sentences. -->
+## Goal
+Ask one question to four LLMs via OpenRouter and show each answer with its speed and cost.
 
-## Goals
-- 
+## Input
+A single question string.
 
-## Non-Goals
-- 
+## Output (per model)
+- answer text
+- latency
+- input tokens
+- output tokens
+- cost
 
-## Models / Providers
-<!-- List the AI models or providers this app will use (e.g. OpenRouter, OpenAI, Anthropic). -->
+## Models
+- openai/gpt-5.5
+- anthropic/claude-opus-4.8
+- google/gemini-3.1-pro
+- qwen/qwen-3.7
 
-## Features
-1. 
+## Pipeline
 
-## User Interface
-<!-- CLI, web UI, API, etc. Describe inputs and outputs. -->
-
-## Data Flow
-<!-- How does a request move through the system? -->
+1. Load API key from .env
+2. Send question to each model
+3. Measure latency
+4. Read token usage
+5. Calculate cost
+6. Display results
 
 ## Error Handling
-<!-- How should the app behave when a model call fails? -->
 
-## Open Questions
-- 
+Each model runs independently.
+
+## Done When
+
+- Four answers appear
+- Cost appears
+- Latency appears
+- One failed model doesn't stop others
